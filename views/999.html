@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" type="text/css" href="../css/main.css">
+  <script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+  <title>Vigenère + Rail Fence Cipher</title>
+  <link href="https://cdn.rawgit.com/michalsnik/aos/2.1.1/dist/aos.css" rel="stylesheet">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script src="https://cdn.rawgit.com/michalsnik/aos/2.1.1/dist/aos.js"></script>
+</head>
+<body>
+  
+  <!-- CIPHER NAME -->
+  <div class="title">
+    <h1 class="outsideScreen">OG Cipher - Vigenère + Rail Fence</h1>
+  </div>
+  <button class="information" id="information">INFORMATION</button><br><br><br>
+  <button class="instructions" id="instructions">INSTRUCTIONS</button>
+  
+  <div id="myinformation" class="information_content">
+    <div class="information-content">
+      <div><span class="close1">&times;</span></div>
+      <div class="information-body">
+        <p>1. The OG Cipher combines Vigenère cipher with the Rail Fence cipher for added security.
+          <br><br>2. First, the message is encrypted using Vigenère, and then Rail Fence cipher is applied.
+          <br><br>3. The key for the Vigenère cipher can be any word, while the Rail Fence requires specifying the number of rows.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div id="myinstructions" class="instructions_content">
+    <div class="instructions-content">
+      <div class="instructions-header">
+        <span class="close2">&times;</span>
+      </div>
+      <div class="instructions-body">
+        <p>
+          <br>1. Enter the text to encrypt.
+          <br><br>2. Enter a keyword for the Vigenère cipher and the number of rows for the Rail Fence cipher.
+          <br><br>3. Click on the cipher button to encrypt the text.
+          <br><br>4. Follow the same instructions to decrypt.
+        </p>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    var information = document.getElementById("myinformation");
+    var instructions = document.getElementById("myinstructions");
+
+    var information_button = document.getElementById("information");
+    var instructions_button = document.getElementById("instructions");
+
+    var span = document.getElementsByClassName("close1")[0];
+    var span1 = document.getElementsByClassName("close2")[0];
+
+    information_button.onclick = function() {
+      information.style.display = information.style.display === "block" ? "none" : "block";
+    }
+    
+    instructions_button.onclick = function() {
+      instructions.style.display = instructions.style.display === "block" ? "none" : "block";
+    }
+
+    span.onclick = function() {
+      information.style.display = "none";
+    }
+    span1.onclick = function() {
+      instructions.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+      if (event.target == information) {
+        information.style.display = "none";
+      } else if (event.target == instructions) {
+        instructions.style.display = "none";
+      }
+    }
+  </script>
+  
+  <!-- CONTROLS TO CIPHER AND DECIPHER MESSAGES -->
+  <div class="inOut extraMargin">
+    <textarea name="input" rows="8" cols="80" id="inputMessage" placeholder="Input"></textarea>
+    <span>
+      <div class="inOut">
+        <input type="text" id="enteredKey" placeholder="Enter key for Vigenère">
+      </div>
+      <div class="inOut">
+        <input type="number" id="railFenceRows" placeholder="Enter Rail Fence rows">
+      </div>
+      <button class="polyButton cipherMethod" id="cipherButtonPoly" onclick="cipherDoubleButtonFunction()">Cipher</button>
+      <button class="polyButton decipherMethod" id="decipherButton" onclick="decipherDoubleButtonFunction()">Decipher</button>
+      <br><br><br><br><br><br>
+    </span>
+    <textarea name="result" rows="8" cols="80" id="result" placeholder="Output"></textarea>
+  </div>
+
+  <script type="text/javascript" src="../js/vigenere.js"></script>
+  <script type="text/javascript" src="../js/main.js"></script>
+  <script>
+    AOS.init({
+      duration: 1200,
+    });
+
+    // Vigenère Cipher Encrypt
+    function encrypt(plaintext, k) {
+      if (k.length <= 1) {
+        alert("Keyword should be at least 2 characters long");
+        return "";
+      }
+      let ciphertext = "";
+      for (let i = 0; i < plaintext.length; i++) {
+        ciphertext += String.fromCharCode((((plaintext.charCodeAt(i) - 97) + (k.charCodeAt(i % k.length) - 97) + 26) % 26) + 97);
+      }
+      return ciphertext;
+    }
+
+    // Vigenère Cipher Decrypt
+    function decrypt(ciphertext, k) {
+      if (k.length <= 1) {
+        alert("Keyword should be at least 2 characters long");
+        return "";
+      }
+      let plaintext = "";
+      for (let i = 0; i < ciphertext.length; i++) {
+        plaintext += String.fromCharCode((((ciphertext.charCodeAt(i) - 97) - (k.charCodeAt(i % k.length) - 97) + 26) % 26) + 97);
+      }
+      return plaintext;
+    }
+
+    // Rail Fence Cipher Encode
+    function encodeMessage(message, rows) {
+      message = message.split(" ").join("");
+      let fence = [];
+      for (let i = 0; i < rows; i++) fence.push([]);
+      let rail = 0;
+      let change = 1;
+
+      for (let char of message.split("")) {
+        fence[rail].push(char);
+        rail += change;
+        if (rail === rows - 1 || rail === 0) change = -change;
+      }
+
+      let result = '';
+      for (let rail of fence) result += rail.join("");
+      return result;
+    }
+
+    // Rail Fence Cipher Decode
+    function decodeMessage(message, rows) {
+      let fence = [];
+      for (let i = 0; i < rows; i++) fence.push([]);
+      let rail = 0;
+      let change = 1;
+
+      message.split("").forEach(char => {
+        fence[rail].push(char);
+        rail += change;
+        if (rail === rows - 1 || rail === 0) change = -change;
+      });
+
+      const rFence = [];
+      for (let i = 0; i < rows; i++) rFence.push([]);
+
+      let i = 0;
+      let s = message.split("");
+      for (let r of fence) {
+        for (let j = 0; j < r.length; j++) rFence[i].push(s.shift());
+        i++;
+      }
+
+      rail = 0;
+      change = 1;
+      let result = "";
+      for (let i = 0; i < message.length; i++) {
+        result += rFence[rail].shift();
+        rail += change;
+        if (rail === rows - 1 || rail === 0) change = -change;
+      }
+
+      return result;
+    }
+
+    // Double Encryption: Vigenère Cipher first, then Rail Fence Cipher
+    function cipherDoubleButtonFunction() {
+      let message = document.getElementById("inputMessage").value.toLowerCase();
+      let keyword = document.getElementById("enteredKey").value.toLowerCase();
+      let rows = parseInt(document.getElementById("railFenceRows").value);
+
+      if (!message || !keyword || isNaN(rows) || rows < 2) {
+        alert("Please enter valid inputs.");
+        return;
+      }
+
+      let vigenereEncrypted = encrypt(message, keyword);
+      if (vigenereEncrypted === "") return;
+      let finalCiphered = encodeMessage(vigenereEncrypted, rows);
+      document.getElementById("result").value = finalCiphered;
+    }
+
+    // Double Decryption: Rail Fence Cipher first, then Vigenère Cipher
+    function decipherDoubleButtonFunction() {
+      let message = document.getElementById("inputMessage").value.toLowerCase();
+      let keyword = document.getElementById("enteredKey").value.toLowerCase();
+      let rows = parseInt(document.getElementById("railFenceRows").value);
+
+      if (!message || !keyword || isNaN(rows) || rows < 2) {
+        alert("Please enter valid inputs.");
+        return;
+      }
+
+      let railFenceDecrypted = decodeMessage(message, rows);
+      let finalDeciphered = decrypt(railFenceDecrypted, keyword);
+      document.getElementById("result").value = finalDeciphered;
+    }
+  </script>
+</body>
+</html>

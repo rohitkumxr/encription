@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" type="text/css" href="../css/main.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+    <title>Scrambled Spiral Cipher</title>
+    <link href="https://cdn.rawgit.com/michalsnik/aos/2.1.1/dist/aos.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.rawgit.com/michalsnik/aos/2.1.1/dist/aos.js"></script>
+</head>
+<body>
+  <div class="title">
+    <h1 class="outsideScreen">Scrambled Spiral Cipher</h1>
+  </div>
+  
+  <button class="information" id="information">INFORMATION</button><br><br><br>
+  <button class="instructions" id="instructions">INSTRUCTIONS</button>
+  <div id="myinformation" class="information_content">
+    <div><span class="close1">&times;</span></div>
+    <div class="information-content">
+      <div class="information-body">
+        <p>
+          1. The Scrambled Spiral Cipher is an encryption method that arranges characters in a spiral pattern before scrambling them based on a keyword.
+          <br><br>2. First, a character shift is applied based on the keyword, then characters are placed in a spiral pattern, followed by a final scrambling.
+          <br><br>3. To decrypt, the process is reversed with the same keyword.
+        </p>
+      </div>
+    </div>
+  </div>
+  
+  <div id="myinstructions" class="instructions_content">
+    <div class="instructions-content">
+      <div class="instructions-header">
+        <span class="close2">&times;</span>
+      </div>
+      <div class="instructions-body">
+        <p>
+          1. Enter the message you want to encrypt.
+          <br><br>2. Enter a keyword for character shifting and scrambling.
+          <br><br>3. Click on "Cipher" to encrypt or "Decipher" to decrypt.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var information = document.getElementById("myinformation");
+    var instructions = document.getElementById("myinstructions");
+    var informtion_button = document.getElementById("information");
+    var instructions_button = document.getElementById("instructions");
+    var span = document.getElementsByClassName("close1")[0];
+    var span1 = document.getElementsByClassName("close2")[0];
+
+    informtion_button.onclick = function() {
+      information.style.display = information.style.display === "block" ? "none" : "block";
+    }
+    instructions_button.onclick = function() {
+      instructions.style.display = instructions.style.display === "block" ? "none" : "block";
+    }
+    span.onclick = function() { information.style.display = "none"; }
+    span1.onclick = function() { instructions.style.display = "none"; }
+    window.onclick = function(event) {
+      if (event.target == information) information.style.display = "none";
+      if (event.target == instructions) instructions.style.display = "none";
+    }
+
+    // Scrambled Spiral Cipher Functions
+    function scrambleSpiralEncrypt(message, keyword) {
+        function shiftCharacters(message, keyword) {
+            let result = "";
+            for (let i = 0; i < message.length; i++) {
+                let charCode = message.charCodeAt(i);
+                // Ensure character is within the ASCII range from 65 to 122
+                if (charCode >= 65 && charCode <= 122) {
+                    let shift = keyword.charCodeAt(i % keyword.length); 
+                    let newChar = charCode + shift;
+                    
+                    // Wrap around within the range of 65 to 122
+                    if (newChar > 122) {
+                        newChar = 65 + (newChar - 123); // Wrap to the start of the range
+                    } else if (newChar < 65) {
+                        newChar = 122 - (64 - newChar); // Wrap to the end of the range
+                    }
+                    result += String.fromCharCode(newChar);
+                } else {
+                    result += String.fromCharCode(charCode); // Keep non-alphabetical characters as is
+                }
+            }
+            return result;
+        }
+
+        function createSpiralGrid(text) {
+            let gridSize = Math.ceil(Math.sqrt(text.length));
+            let grid = Array(gridSize).fill().map(() => Array(gridSize).fill(''));
+            let directions = [[0, 1], [1, 0], [0, -1], [-1, 0]]; // Right, Down, Left, Up
+            let dir = 0, row = 0, col = 0;
+            for (let i = 0; i < text.length; i++) {
+                grid[row][col] = text[i];
+                let nextRow = row + directions[dir][0];
+                let nextCol = col + directions[dir][1];
+                if (nextRow < 0 || nextRow >= gridSize || nextCol < 0 || nextCol >= gridSize || grid[nextRow][nextCol] !== '') {
+                    dir = (dir + 1) % 4;
+                    nextRow = row + directions[dir][0];
+                    nextCol = col + directions[dir][1];
+                }
+                row = nextRow;
+                col = nextCol;
+            }
+            return grid.flat().join('');
+        }
+
+        let shiftedMessage = shiftCharacters(message, keyword);
+        return createSpiralGrid(shiftedMessage); 
+    }
+
+    function scrambleSpiralDecrypt(ciphertext, keyword) {
+        function reverseSpiral(text) {
+            let gridSize = Math.ceil(Math.sqrt(text.length));
+            let grid = Array(gridSize).fill().map(() => Array(gridSize).fill(''));
+            let directions = [[0, 1], [1, 0], [0, -1], [-1, 0]]; 
+            let dir = 0, row = 0, col = 0;
+            for (let i = 0; i < text.length; i++) {
+                grid[row][col] = text[i];
+                let nextRow = row + directions[dir][0];
+                let nextCol = col + directions[dir][1];
+                if (nextRow < 0 || nextRow >= gridSize || nextCol < 0 || nextCol >= gridSize || grid[nextRow][nextCol] !== '') {
+                    dir = (dir + 1) % 4;
+                    nextRow = row + directions[dir][0];
+                    nextCol = col + directions[dir][1];
+                }
+                row = nextRow;
+                col = nextCol;
+            }
+            let result = '';
+            for (let r = 0; r < gridSize; r++) {
+                for (let c = 0; c < gridSize; c++) {
+                    result += grid[r][c];
+                }
+            }
+            return result;
+        }
+
+        function reverseShiftCharacters(text, keyword) {
+            let result = "";
+            for (let i = 0; i < text.length; i++) {
+                let charCode = text.charCodeAt(i);
+                // Ensure character is within the ASCII range from 65 to 122
+                if (charCode >= 65 && charCode <= 122) {
+                    let shift = keyword.charCodeAt(i % keyword.length);
+                    let newChar = charCode - shift;
+                    
+                    // Wrap around within the range of 65 to 122
+                    if (newChar > 122) {
+                        newChar = 65 + (newChar - 123);
+                    } else if (newChar < 65) {
+                        newChar = 122 - (64 - newChar);
+                    }
+                    result += String.fromCharCode(newChar);
+                } else {
+                    result += String.fromCharCode(charCode); // Keep non-alphabetical characters as is
+                }
+            }
+            return result;
+        }
+
+        let unscrambledMessage = reverseSpiral(ciphertext);
+        return reverseShiftCharacters(unscrambledMessage, keyword);
+    }
+
+    function cipherButtonFunction() {
+        let message = document.getElementById("inputMessage").value;
+        let keyword = document.getElementById("enteredKey").value;
+        if (!message || !keyword) {
+            alert("Please enter both message and keyword.");
+            return;
+        }
+        document.getElementById("result").value = scrambleSpiralEncrypt(message, keyword);
+    }
+    
+    function decipherButtonFunction() {
+        let message = document.getElementById("inputMessage").value;
+        let keyword = document.getElementById("enteredKey").value;
+        if (!message || !keyword) {
+            alert("Please enter both message and keyword.");
+            return;
+        }
+        document.getElementById("result").value = scrambleSpiralDecrypt(message, keyword);
+    }
+
+    AOS.init({ duration: 1200 });
+  </script>
+
+  <div class="inOut">
+    <textarea name="input" rows="8" cols="80" id="inputMessage" placeholder="Input"></textarea>
+    <span>
+      <button class="polyButton cipherMethod" id="cipherButtonPoly" onclick="cipherButtonFunction()">Cipher</button>
+      <button class="polyButton decipherMethod" id="decipherButton" onclick="decipherButtonFunction()">Decipher</button>
+      <br><br><br>
+      <div class="inOut">
+        <input type="text" id="enteredKey" placeholder=" Enter Keyword">
+      </div>
+    </span>
+    <textarea name="result" rows="8" cols="80" id="result" placeholder="Output"></textarea>
+  </div>
+
+</body>
+</html>
